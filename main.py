@@ -48,7 +48,16 @@ def sigma(func:any, items: list)->float:
     for i in items:
         n+=func(i[0],i[1])
     return n
-        
+
+#topological search
+topo = []
+visited = set()
+def build_topology(curr) -> None:
+    if curr not in visited:
+        visited.add(curr)
+        for child in curr._prev:
+            build_topology(child)
+        topo.append(curr)
         
 
 #inputs      
@@ -77,15 +86,15 @@ fx._backwards()
 x2w2._backwards()
 x1w1._backwards()
 
+build_topology(o)
+print(topo)
 
 
 
 
 
+#print(n)
 
-
-print(n)
-
-print(draw_dot(o))
+#print(draw_dot(o))
 
 
