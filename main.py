@@ -13,22 +13,60 @@ class Value:
     def __repr__(self) -> str:
         return f"Value(x={self.x})"
     
+    #Addition
     def __add__(self, data) -> float:
+        data = data if isinstance(data, Value) else Value(data)
         equals = Value(self.x + data.x, (self, data), '+')
         #derivative / propogate gradient
         def _backwards():
-            self.grad = 1.0*equals.grad
-            data.grad = 1.0*equals.grad
+            self.grad += 1.0*equals.grad
+            data.grad += 1.0*equals.grad
         equals._backwards = _backwards
         return equals
-  
+    
+    def __radd__(self, data):
+        return self+data
+    
+    #Multiplication
     def __mul__(self, data) -> float:
+        data = data if isinstance(data, Value) else Value(data)
         equals = Value(self.x*data.x, (self, data),'*')
         def _backwards():
-            self.grad = (data.x)*(equals.grad)
-            data.grad = (self.x)*(equals.grad)
+            self.grad += (data.x)*(equals.grad)
+            data.grad += (self.x)*(equals.grad)
         equals._backwards = _backwards
         return equals
+    
+    def __rmul__(self, data):
+        return self*data
+    
+    #Exponentiation
+    def exp(self):
+        equals = Value(math.exp(self.x), (self, ), 'Exp')
+        def _backwards():
+            self.grad += (equals.x)*(equals.grad)
+        equals._backwards = _backwards
+        return equals
+    
+    #Division
+    def __truediv__(self, data):
+        return self*(data**-1)
+    
+    #Power
+    def __pow__(self, data):
+        assert isinstance(data, (int,float))
+        equals = Value(self**data, (self,), 'pow') 
+        def _backwards():
+            self.grad += data*self.data**(data-1) * equals.grad
+        equals._backwards = _backwards
+        return equals 
+    
+    #subtraction
+    def __neg__(self):
+        return self*-1
+    
+    def __sub__(self, other):
+        return self+ (-other)
     
     #Activation func = hyperbolic tan
     def tahn(self):
@@ -36,9 +74,27 @@ class Value:
         y = (math.exp(2*x)-1)/(math.exp(2*x)+1)
         t = Value(y, (self, ), 'tanh')
         def _backwards():
-            self.grad = (1 - y**2)*(t.grad)
+            self.grad += (1 - y**2)*(t.grad)
         t._backwards = _backwards
         return t
+    
+    
+    #topological search
+    def backwards(self):
+        topo = []
+        visited = set()
+        def build_topology(curr) -> None:
+            if curr not in visited:
+                visited.add(curr)
+                for child in curr._prev:
+                    build_topology(child)
+                topo.append(curr)
+        build_topology(self)
+        
+        self.grad = 1.0
+        for node in reversed(topo):
+            node._backwards()
+        print(topo)
     
     
 #Summations
@@ -49,15 +105,7 @@ def sigma(func:any, items: list)->float:
         n+=func(i[0],i[1])
     return n
 
-#topological search
-topo = []
-visited = set()
-def build_topology(curr) -> None:
-    if curr not in visited:
-        visited.add(curr)
-        for child in curr._prev:
-            build_topology(child)
-        topo.append(curr)
+
         
 
 #inputs      
@@ -78,22 +126,11 @@ fx = x1w1 + x2w2
 n = fx + b; n.label='n'
 
 o = n.tahn()
-o.grad = 1.0
-o._backwards()
-n._backwards()
-b._backwards()
-fx._backwards()
-x2w2._backwards()
-x1w1._backwards()
+o.backwards()
 
-build_topology(o)
-print(topo)
+a=Value(2)
 
-
-
-
-
-#print(n)
+print(a-4)
 
 #print(draw_dot(o))
 
