@@ -1,4 +1,5 @@
 from graph import draw_dot
+import torch
 import math
 
 class Value:
@@ -128,10 +129,5 @@ n = fx + b; n.label='n'
 o = n.tahn()
 o.backwards()
 
-a=Value(2)
-
-print(a-4)
-
-#print(draw_dot(o))
-
+print(o)
 
