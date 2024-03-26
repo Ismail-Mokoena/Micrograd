@@ -79,6 +79,8 @@ y_set = torch.tensor(y_set)
 g = torch.Generator().manual_seed(2147483647)
 weights = torch.randn((27,27), generator=g, requires_grad=True)
 
+
+
 ##Gradient Descent
 for i in range(10):
     ##Forward Pass
@@ -97,13 +99,14 @@ for i in range(10):
     # Loss Function
     #probability the model assignes to the next correct char
     #neg log loss
-    loss = -prob[torch.arange(6), y_set].log().mean()
+    #implement regularization loss
+    loss = -prob[torch.arange(6), y_set].log().mean() + 0.01*(weights**2).mean()
     print(f'loss={loss}')
     
     ##Backward Pass
     weights.grad = None
     loss.backward()
     #update tensor
-    weights.data += -0.1 * weights.grad
+    weights.data += -10 * weights.grad
 
 
