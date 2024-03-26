@@ -18,16 +18,19 @@ def create_bi(words:list, letters)->torch.int32:
 
     return N
  
-def predictions(n, gen_obj, letters)->None:
+def predictions(weights, gen_obj, letters)->None:
     token_index = 0
-    for i in range(20):
+    for _ in range(30):
         text = []
         itos = {s+1:i for s,i in enumerate(letters)}
         itos[0]='.'
         while True:
-            token_array = n[token_index]
+            x_encoded = F.one_hot(torch.tensor([token_index]),num_classes=27).float()
+            logits  = x_encoded@weights
             #Normalize
-            token_index = torch.multinomial(token_array,num_samples=1,replacement=True,generator=gen_obj).item()
+            counts = (logits).exp() #x_encoded@weights log-counts
+            char_prob = counts/counts.sum(1, keepdims=True)
+            token_index = torch.multinomial(char_prob,num_samples=1,replacement=True,generator=gen_obj).item()
             text.append(itos[token_index])
             if token_index == 0:
                 break
@@ -109,4 +112,4 @@ for i in range(10):
     #update tensor
     weights.data += -10 * weights.grad
 
-
+predictions(weights,g,letters)
