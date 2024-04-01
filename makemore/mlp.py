@@ -57,15 +57,15 @@ c = torch.randn((27,2), generator=g)
 #n_neurons = 100, n_inputs = 6
 #embed.shape = 18,3,2 so no imputs = 3*2
 #100~ we determine that
-weight_1 = torch.randn((6,300),generator=g)
-biases_1 = torch.randn(300,generator=g)
+weight_1 = torch.randn((6,300),generator=g)*0.1
+biases_1 = torch.randn(300,generator=g)*0.01
 
 
 
 """2.Final layer"""
 #n_neurons = 27, n_inputs = 100
-weight_2 = torch.randn((300,27),generator=g)
-biases_2 = torch.randn(27,generator=g)
+weight_2 = torch.randn((300,27),generator=g)*0.01
+biases_2 = torch.randn(27,generator=g)*0
 parameters = [c,weight_1,biases_1,weight_2,biases_2]
 total_params = sum( param.nelement() for param in parameters)
 
@@ -111,7 +111,8 @@ for i in range (10000):
     loss.backward() 
 
     #update we want to nudge our params
-    l = learning_rate[i]
+    #l = learning_rate[i]
+    l=1.25
     for params in parameters:
         param.data += -l*param.grad
         
@@ -119,11 +120,14 @@ for i in range (10000):
     lri.append(l)
     lossi.append(loss.item())
 
-print(loss.item())
-plt.plot(lri,lossi)  
-plt.show() 
 
-"""Sample from model"""
+print(loss.item())
+#plt.plot(lri,lossi)  
+#plt.show() 
+
+"""Sample from model
+
+
 r = torch.Generator().manual_seed(2147483647+10)
 block_size = 3
 for _ in range (10):
@@ -140,3 +144,5 @@ for _ in range (10):
         if ix == 0:
             break
     print(''.join(itos[i] for i in out))
+
+"""
