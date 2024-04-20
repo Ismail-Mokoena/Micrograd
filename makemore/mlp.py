@@ -112,7 +112,7 @@ for i in range (10000):
 
     #update we want to nudge our params
     #l = learning_rate[i]
-    l=1.25
+    l=0.01
     for params in parameters:
         param.data += -l*param.grad
         
@@ -120,7 +120,8 @@ for i in range (10000):
     lri.append(l)
     lossi.append(loss.item())
 
-
+#plt.figure(figsize=(20,10))
+#plt.imshow(f.abs()>0.99, cmap='gray', interpolation='nearest')
 print(loss.item())
 #plt.plot(lri,lossi)  
 #plt.show() 
